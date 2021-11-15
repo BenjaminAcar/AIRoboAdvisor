@@ -1,0 +1,951 @@
+<script type="text/javascript">
+
+    function addResistanceButton() {
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'get_resistance' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+
+    // Paypal
+    paypal.Buttons({
+
+    // onInit is called when the button first renders
+    onInit: function(data, actions) {
+
+    // Disable the buttons
+    actions.disable();
+
+    // Listen for changes to the checkbox
+    document.querySelector('.contact-form')
+        .addEventListener('change', function(event) {
+
+        // Enable or disable the button when it is checked or unchecked
+        if (event.target.checkValidity()) {
+            var x = document.getElementById("ticket_symbol");
+            var y = document.getElementById("contact_email");
+            if (x.value == "" || y.value == "" ) {
+                actions.disable();
+            } else {
+                if (y.value.includes("@")) {
+                    actions.enable();
+                }
+                
+            }
+            
+        } else {
+            actions.disable();
+        }
+        });
+    },
+    createOrder: function(data, actions) {
+        // This function sets up the details of the transaction, including the amount and line item details.
+        return actions.order.create({
+        purchase_units: [{
+            amount: {
+            value: '4.99'
+            }
+        }]
+        });
+    },
+    onApprove: function(data, actions) {
+        // This function captures the funds from the transaction.
+        return actions.order.capture().then(function(details) {
+        // This function shows a transaction success message to your buyer.
+        //alert('Transaction completed by ');
+        
+        var ticket = document.getElementById("ticket_symbol").value; 
+        ticket = ticket.split("(")[1]
+        ticket = ticket.split(")")[0]
+        var mail = document.getElementById("contact_email").value; 
+        var dict = {
+        "ticket": ticket,
+        "mail": mail
+        };
+
+        $.ajax({
+            type: 'GET',
+            data: dict,
+            url: '{% url 'analysis' %}',
+            success: function (response) {
+                document.getElementById("paypal_form").reset(); 
+            }
+        });
+
+        swal({
+            title: 'Thank you for the purchase!',
+            text: 'Your analysis comes in the next 30 min. Latest 12 H later..',
+            confirmButtonColor: '#00f700',
+            confirmButtonText: 'Okay!',
+            background: 'white'
+        })
+    });
+    }
+
+    }).render('#paypal-button-container');
+
+
+
+window.addEventListener("DOMContentLoaded", function () {
+        // get the form elements defined in your form HTML above
+
+        var form = document.getElementById("my-form");
+        // var button = document.getElementById("my-form-button");
+        var status = document.getElementById("status");
+
+        // Success and Error functions for after the form is submitted
+
+        function success() {
+            form.reset();
+            status.classList.add("success");
+            status.innerHTML = "Thanks!";
+        }
+
+        function error() {
+            status.classList.add("error");
+            status.innerHTML = "Oops! There was a problem. Please check your input!";
+        }
+
+        // handle the form submission event
+
+        form.addEventListener("submit", function (ev) {
+            ev.preventDefault();
+            var data = new FormData(form);
+            ajax(form.method, form.action, data, success, error);
+        });
+        });
+
+        // helper function for sending an AJAX request
+
+        function ajax(method, url, data, success, error) {
+        var xhr = new XMLHttpRequest();
+        xhr.open(method, url);
+        xhr.setRequestHeader("Accept", "application/json");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== XMLHttpRequest.DONE) return;
+            if (xhr.status === 200) {
+            success(xhr.response, xhr.responseType);
+            } else {
+            error(xhr.status, xhr.response, xhr.responseType);
+            }
+        };
+        xhr.send(data);
+        }
+
+
+
+$(function() {
+    
+
+	var availableTags = {{ stockList|safe }};
+	availableTags = Object.values(availableTags)
+
+
+	//
+	// Add the code for selecting the #tags input and set the source
+	// for the autocomplete to be 'availableTags' which are set in 
+	// autocomplete-options.js
+	$('#ticket_symbol').autocomplete({
+		selectFirst: true,
+		change: function (event, ui) {
+				if (ui.item == null){ 
+				//here is null if entered value is not match in suggestion list
+					$(this).val((ui.item ? ui.item.id : ""));
+				}
+			},
+			source: function(request, response) {
+			var results = $.ui.autocomplete.filter(availableTags, request.term);
+			response(results.slice(0, 10));
+			
+		},
+		select: function(){
+			$('#ticket_symbol').autocomplete('close').blur();
+		}
+		});
+
+	});
+
+
+
+
+
+
+       $(function() {
+    
+
+		var availableTags = {{ stockList|safe }};
+		availableTags = Object.values(availableTags)
+
+
+
+
+
+    //
+    // Add the code for selecting the #tags input and set the source
+    // for the autocomplete to be 'availableTags' which are set in 
+    // autocomplete-options.js
+    $('#searchInput').autocomplete({
+		source: function(request, response) {
+        var results = $.ui.autocomplete.filter(availableTags, request.term);
+        response(results.slice(0, 10));
+    	},
+		selectFirst: true,
+		change: function (event, ui) {
+				if (ui.item == null){ 
+				//here is null if entered value is not match in suggestion list
+					$(this).val((ui.item ? ui.item.id : ""));
+				}
+			},
+		select: function (event, ui) {
+			var inputField = ui.item.value
+			inputField = inputField.split("(")[1]
+			inputField = inputField.split(")")[0]
+			document.getElementById("chartMenu").innerHTML = "BC";
+			$.ajax({
+					type: 'GET',
+					data: inputField,
+					url: '{% url 'get_stock' %}',
+					success: function (response) {
+						document.getElementById("searchInput").value = response["Name"];
+						$("#graphId").html(response["currentGraph"]);
+						changeTimespan(response["daysBetween"]);
+					}
+				});
+		
+				$('#searchInput').autocomplete('close').blur();
+		}
+		}).keyup(function() {
+		var isValid = false;
+		for (i in availableTags) {
+			if (availableTags[i].toLowerCase().match(this.value.toLowerCase())) {
+				isValid = true;
+			}
+		}
+		if (!isValid) {
+			this.value = previousValue
+		} else {
+			previousValue = this.value;
+		}
+		});;
+	});
+
+    document.addEventListener('fullscreenchange', (event) => {
+        
+    // document.fullscreenElement will point to the element that
+    // is in fullscreen mode if there is one. If there isn't one,
+    // the value of the property is null.
+    if (document.fullscreenElement) {
+        console.log(`Element: ${document.fullscreenElement.id} entered full-screen mode.`);
+    } else {
+        
+        $.ajax({
+            type: 'GET',
+            url: '{% url 'close_full_screen' %}',
+            success: function (response) {
+                $("#graphId").html(response["currentGraph"]);
+            }
+            });
+            
+        }
+        
+    });
+
+    //Full Screen
+    document.addEventListener("fullscreenchange", onFullScreenChange, false)
+    document.addEventListener("webkitfullscreenchange", onFullScreenChange, false)
+    document.addEventListener("mozfullscreenchange", onFullScreenChange, false)
+
+    function onFullScreenChange() {
+        var fullscreenElement = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement;
+        if (fullscreenElement) {
+            console.log("Full Screen Mode loaded")
+        } else {
+            $.ajax({
+                type: 'GET',
+                url: '{% url 'close_full_screen' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+                });
+                
+            }
+    }
+
+    function openFullscreen() {
+        var elem = document.getElementById("graphId");
+        $.ajax({
+            type: 'GET',
+            url: '{% url 'full_screen' %}',
+            success: function (response) {
+                $("#graphId").html(response["currentGraph"]);
+            }
+        });
+        if (elem.requestFullscreen) {
+            elem.webkitRequestFullscreen();
+            
+        } else if (elem.webkitRequestFullscreen) {/* Safari */
+            elem.webkitRequestFullscreen();
+            
+        } else if (elem.msRequestFullscreen) { /* IE11 */
+            elem.webkitRequestFullscreen();
+        }
+    }
+
+
+    var renderPage = true;
+
+    if(navigator.userAgent.indexOf('MSIE')!==-1
+        || navigator.appVersion.indexOf('Trident/') > 0){
+        /* Microsoft Internet Explorer detected in. */
+        alert("Please view this in a modern browser such as Chrome or Microsoft Edge.");
+        renderPage = false;
+    }
+
+    function changeTimespan(timespan) {
+        if (timespan == "1week") {
+            document.getElementById("timespanMenu").innerHTML = "1 week";
+        }
+        if (timespan == "1month") {
+            document.getElementById("timespanMenu").innerHTML = "1 month";
+        }
+        if (timespan == "3month") {
+            document.getElementById("timespanMenu").innerHTML = "3 month";
+        }
+        if (timespan == "6month") {
+            document.getElementById("timespanMenu").innerHTML = "6 month";
+        }
+        if (timespan == "1year") {
+            document.getElementById("timespanMenu").innerHTML = "1 year";
+        }
+        if (timespan == "3year") {
+            document.getElementById("timespanMenu").innerHTML = "3 year";
+        }
+        if (timespan == "5year") {
+            document.getElementById("timespanMenu").innerHTML = "5 year";
+        }
+        if (timespan == "10year") {
+            document.getElementById("timespanMenu").innerHTML = "10 year";
+        }
+
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'timespan_update' %}',
+                data: timespan,
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+
+    }
+
+    function searchFunction() {
+        var stockInput = document.getElementById("searchInput").value;
+        document.getElementById("chartMenu").innerHTML = "BC";
+        console.log(stockInput)
+        if (stockInput=="") {
+            return
+        }
+        $.ajax({
+                type: 'GET',
+                data: stockInput,
+                url: '{% url 'get_stock' %}',
+                success: function (response) {
+                    document.getElementById("searchInput").value = response["Name"];
+                    $("#graphId").html(response["currentGraph"]);
+                    changeTimespan(response["daysBetween"]);
+                }
+            });
+    };
+
+    function deleteLinesButton() {
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'delete_lines' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getBC() {
+        document.getElementById("chartMenu").innerHTML = "BC";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'basic_chart' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getCC() {
+        document.getElementById("chartMenu").innerHTML = "CC";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'candle_chart' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getBB() {
+        document.getElementById("chartMenu").innerHTML = "BB";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'bollinger_bands' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getMC() {
+        document.getElementById("chartMenu").innerHTML = "MC";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'monte_carlo' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getADI() {
+        document.getElementById("chartMenu").innerHTML = "ADI";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'adi' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getVWAP() {
+        document.getElementById("chartMenu").innerHTML = "VWAP";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'vwap' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getAO() {
+        document.getElementById("chartMenu").innerHTML = "AO";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'ao' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getSO() {
+        document.getElementById("chartMenu").innerHTML = "SO";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'so' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getKAMA() {
+        document.getElementById("chartMenu").innerHTML = "KAMA";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'kama' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getPPO() {
+        document.getElementById("chartMenu").innerHTML = "PPO";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'ppo' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getPVO() {
+        document.getElementById("chartMenu").innerHTML = "PVO";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'pvo' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getROC() {
+        document.getElementById("chartMenu").innerHTML = "ROC";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'roc' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getSRSI() {
+        document.getElementById("chartMenu").innerHTML = "SRSI";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'srsi' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getUO() {
+        document.getElementById("chartMenu").innerHTML = "UO";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'uo' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getWRI() {
+        document.getElementById("chartMenu").innerHTML = "WRI";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'wri' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    //used for autocomplete field. without this function, an error appears
+    jQuery.curCSS = function(element, prop, val) {
+        return jQuery(element).css(prop, val);
+    };
+
+    var explainDict = {
+        "BC": "Basic Chart (BC): Basic Indicator.",
+        "BB": "Bollinger Bands (BB): Votality Indicator.",
+        "CC": "Candle Chart (CC): Trend Indicator.",
+        "MC": "Monte Carlo Simulation (MC): Simulated Indicator.",
+        "LR": "Linear Regression (LR): Simulated Indicator.",
+        "RSI": "Relative Strength Index (RSI): Momentum Indicator.",
+        "ADI": "Accumulation/Distribution Index (ADI): Volume Indicator.",
+        "VWAP": "Volume Weighted Average Price (VWAP): Volume Indicator.",
+        "CMF": "Chaikin Money Flow (CMF): Volume Indicator.",
+        "EMV": "Ease of movement (EMV): Volume Indicator.",
+        "FI": "Force Index (FI): Volume Indicator.",
+        "MFI": "Money Flow Index (MFI): Volume Indicator.",
+        "NVI": "Negative Volume Index (NVI): Volume Indicator.",
+        "OBV": "On-balance volume (OBV): Volume Indicator.",
+        "VPT": "Volume-price trend (VPT): Volume Indicator.",
+        "AO": "Awesome Oscillator (AO): Momentum Indicator.",
+        "SO": "Stochastic Oscillator (SO): Momentum Indicator.",
+        "KAMA": "Kaufman’s Adaptive Moving Average (KAMA): Momentum Indicator.",
+        "PPO": "Percentage Price Oscillator (PPO): Momentum Indicator.",
+        "PVO": "Percentage Volume Oscillator (PVO): Momentum Indicator.",
+        "ROC": "Rate of Change (ROC): Momentum Indicator.",
+        "SRSI": "Stochastic RSI (SRSI): Momentum Indicator.",
+        "UO": "Ultimate Oscillator (UO): Momentum Indicator.",
+        "WRI": "Williams R (WRI): Momentum Indicator.",
+        "ART": "Average True Range (ATR): Votality Indicator.",
+        "DC": "Donchian Channel (DC): Votality Indicator.",
+        "KC": "Keltner Channels (KC): Votality Indicator.",
+        "UI": "Ulcer Index (UI): Votality Indicator.",
+        "AI": "Aroon Indicator (AI): Trend Indicator.",
+        "CCI": "Commodity Channel Index (CCI): Trend Indicator.",
+        "DPO": "Detrended Price Oscillator (DPO): Trend Indicator.",
+        "II": "Ichimoku Kinkō Hyō (Ichimoku): Trend Indicator.",
+        "KST": "KST Signal (KST): Trend Indicator.",
+        "MACD": "Moving Average Convergence Divergence (MACD): Trend Indicator.",
+        "MI": "Mass Index (MI): Trend Indicator.",
+        "PSAR": "Parabolic Stop and Reverse (SAR): Trend Indicator.",
+        "STC": "Schaff Trend Cycle (STC): Trend Indicator.",
+        "TRIX": "Trix (TRIX): Trend Indicator.",
+        "VI": "Vortex Indicator (VI): Trend Indicator.",
+        "WMA": "Weighted Moving Average (WMA): Trend Indicator."
+    };
+    
+    function changingExplanation(hoverElement) {
+        document.getElementById("explainBox").value = explainDict[hoverElement];
+    };
+
+
+    function hoveringMenu() {
+        document.getElementById("addResistanceBtn").style.visibility = "hidden";
+        document.getElementById("addSupportBtn").style.visibility = "hidden";
+        document.getElementById("deleteLinesBtn").style.visibility = "hidden";
+        document.getElementById("fullScreen").style.visibility = "hidden";
+        document.getElementById("explainBox").style.visibility = "visible";
+
+    };
+
+    function hoveringMenuClosed() {
+        var selectedItem = document.getElementById("chartMenu").innerHTML;
+        var explainBox = document.getElementById("explainBox").innerHTML;
+
+        if (selectedItem == "BC") {
+            document.getElementById("addResistanceBtn").style.visibility = "visible";
+            document.getElementById("addSupportBtn").style.visibility = "visible";
+            document.getElementById("deleteLinesBtn").style.visibility = "visible";
+        }
+        document.getElementById("fullScreen").style.visibility = "visible";
+        document.getElementById("explainBox").style.visibility = "hidden";
+
+    };
+    
+    function getCMF() {
+        document.getElementById("chartMenu").innerHTML = "CMF";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'cmf' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getEMV() {
+        document.getElementById("chartMenu").innerHTML = "EMV";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'emv' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getFI() {
+        document.getElementById("chartMenu").innerHTML = "FI";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'fi' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getNVI() {
+        document.getElementById("chartMenu").innerHTML = "NVI";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'nvi' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getOBV() {
+        document.getElementById("chartMenu").innerHTML = "OBV";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'obv' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getVPT() {
+        document.getElementById("chartMenu").innerHTML = "VPT";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'vpt' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getMFI() {
+        document.getElementById("chartMenu").innerHTML = "FI";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'mfi' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getLR() {
+        document.getElementById("chartMenu").innerHTML = "LR";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'linear_regression' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getRSI() {
+        document.getElementById("chartMenu").innerHTML = "RSI";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'get_rsi' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getART() {
+        document.getElementById("chartMenu").innerHTML = "ART";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'art' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+    
+    function getDC() {
+        document.getElementById("chartMenu").innerHTML = "DC";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'dc' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+    
+    function getKC() {
+        document.getElementById("chartMenu").innerHTML = "KC";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'kc' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+    
+    function getUI() {
+        document.getElementById("chartMenu").innerHTML = "UI";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'ui' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getAI() {
+        document.getElementById("chartMenu").innerHTML = "AI";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'ai' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getCCI() {
+        document.getElementById("chartMenu").innerHTML = "CCI";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'cci' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getDPO() {
+        document.getElementById("chartMenu").innerHTML = "DPO";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'dpo' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getII() {
+        document.getElementById("chartMenu").innerHTML = "II";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'ii' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getKST() {
+        document.getElementById("chartMenu").innerHTML = "KST";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'kst' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getMACD() {
+        document.getElementById("chartMenu").innerHTML = "MACD";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'macd' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getMI() {
+        document.getElementById("chartMenu").innerHTML = "MI";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'mi' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getPSAR() {
+        document.getElementById("chartMenu").innerHTML = "PSAR";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'psar' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getSTC() {
+        document.getElementById("chartMenu").innerHTML = "STC";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'stc' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+
+    function getTRIX() {
+        document.getElementById("chartMenu").innerHTML = "TRIX";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'trix' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getVI() {
+        document.getElementById("chartMenu").innerHTML = "VI";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'vi' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function getWMA() {
+        document.getElementById("chartMenu").innerHTML = "WMA";
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'wma' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function sleep(milliseconds) {
+        var start = new Date().getTime();
+        for (var i = 0; i < 1e7; i++) {
+            if ((new Date().getTime() - start) > milliseconds){
+            break;
+            }
+        }
+    }
+
+    function executeFunctionByName(functionName, context /*, args */) {
+        var args = Array.prototype.slice.call(arguments, 2);
+        var namespaces = functionName.split(".");
+        var func = namespaces.pop();
+        for(var i = 0; i < namespaces.length; i++) {
+            context = context[namespaces[i]];
+        }
+        return context[func].apply(context, args);
+    }
+
+    function changeGraph(selectedGraph) {
+        executeFunctionByName("get".concat(selectedGraph), window, arguments);
+    };
+
+    function addSupportButton() {
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'get_support' %}',
+                success: function (response) {
+                    $("#graphId").html(response["currentGraph"]);
+                }
+            });
+    };
+
+    function eventFunction(event) {
+        var x = event.code;
+        if(x == "Enter") {
+            searchFunction();
+        }
+    }
+
+    function dropdownMenuDeactivate() {
+        document.getElementById('dropdownMenu').click();
+    }
+
+    function loadingEvents() {
+        document.getElementById("explainBox").value = explainDict["BC"];
+    }
+
+
+    $(document).ready(function(){
+    $("form").submit(function(){
+        $.ajax({
+                type: 'GET',
+                url: '{% url 'analysis' %}',
+                success: function (response) {
+                    console.log(response)
+                }
+            });
+        });
+    });
+</script>

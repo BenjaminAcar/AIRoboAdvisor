@@ -1,0 +1,80 @@
+
+
+/* Picture into center */
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+
+	   
+
+/* dropdown Menu multiple columns */
+.multi-cols {
+column-count: 5;
+width:600px;
+}	
+
+
+/* tooltip explination for the tools */
+input[type=text], select {
+  width: 100%;
+  padding: 12px 20px;
+  display: inline-block;
+  border: 1px solid white;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+input[type=email], select {
+  width: 100%;
+  padding: 12px 20px;
+  display: inline-block;
+  border: 1px solid white;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+   input[type=textExplain], select {
+  width: 60%;
+  padding: 12px 20px;
+  display: inline-block;
+  border: 1px solid white;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+
+input[type=submit] {
+  width: 60%;
+  background-color: black;
+  color:black;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+input[type=submit]:hover {
+  background-color: black;
+}
+input, select, textarea{
+	background-color: black;
+    color: white;
+}
+
+
+input{
+	widht:100%;
+	padding: 10px 15px;
+	font-synthesis: 18px;
+	font-family: arial;
+	color: white;
+}
+
+
+input:focus, textarea:focus, select:focus{
+  outline: none;
+  background-color: black;
+}

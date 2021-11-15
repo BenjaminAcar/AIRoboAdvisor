@@ -1,0 +1,273 @@
+{% load static %}
+<!DOCTYPE html>
+{% block content %}
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Free Stock Analysis</title>
+	<script type="text/javascript" src="{% static 'chartanalysis/js/jquery-3.2.1.min.js' %}" ></script>
+	<script type="text/javascript" src="{% static 'chartanalysis/js/jquery.magnific-popup.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'chartanalysis/js/jquery.backstretch.min.js' %}"></script>
+	<script src="https://www.paypal.com/sdk/js?client-id=AcYgFLXLUs6JuBMugFr6veLuA5Do8HsBaRmbA5e0MOZV5SPnpXizjyFtnJZTpPoWPg-o0ONqBU8uIQRG"> </script>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400">  <!-- Google web font "Open Sans" -->
+	<link rel="stylesheet" href="{% static 'chartanalysis/css/fontawesome-all.min.css' %}">
+	<link rel="stylesheet" href="{% static 'chartanalysis/css/bootstrap.min.css' %}">
+	<link rel="stylesheet" type="{% static 'chartanalysis/css/magnific-popup.css' %}"/>
+	<link rel="stylesheet" type="{% static 'chartanalysis/slick/slick.css' %}"/>
+	<link rel="stylesheet" type="{% static 'chartanalysis/slick/slick-theme.css' %}"/>
+	<link rel="stylesheet" href="{% static 'chartanalysis/css/tooplate-style.css' %}">
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+	<link rel="icon" type="image/png" href="{% static '/chartanalysis/img/favicon.png' %}"/>
+	<link type="image/png" href="{% static '/chartanalysis/img/logo.png' %}"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" /> 
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+	<script src="https://unpkg.com/sweetalert2@7.8.2/dist/sweetalert2.all.js"></script>
+	<link rel="stylesheet" type="text/css" href="{% static 'chartanalysis/css/ui.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'chartanalysis/css/effects.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'chartanalysis/css/input.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'chartanalysis/css/form.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'chartanalysis/css/dropdown.css' %}">
+	<link rel="stylesheet" href="{% static 'chartanalysis/css/styles.css' %}">
+</head>
+
+<body onload="loadingEvents()">
+	
+	<p style="font-size:xx-large; text-align: center; color: white; display: none;" id="demo"></p>
+
+	{% include 'ajax.js.html' %}
+
+	<!-- Loader -->
+	<div id="loader-wrapper">
+		<div id="loader"></div>
+		<div class="loader-section section-left"></div>
+		<div class="loader-section section-right"></div>
+	</div>
+
+	<!-- Page Content -->
+	<div class="container-fluid tm-main">
+		
+		<div class="row tm-main-row">
+			<!-- Sidebar -->
+			<div id="tmSideBar" class="col-xl-3 col-lg-4 col-md-12 col-sm-12 sidebar">
+				<button id="tmMainNavToggle" class="menu-icon">&#9776;</button>
+				<div class="inner">
+					<nav id="tmMainNav" class="tm-main-nav">
+						<ul>
+							<img src="{% static '/chartanalysis/img/logo.png' %}"/>
+							
+							<li>
+								<a href="#intro" id="tmNavLink1" class="scrolly active" data-page="#tm-section-1">
+									<span>Start</span>
+								</a>
+							</li>
+							<li >
+								<a href="/tools#tools" id="tmNavLink2" class="scrolly"  data-page="#tm-section-2" data-page-type="carousel">
+									<span>Tools</span>
+								</a>
+							</li>
+							<li>
+								<a href="#company" class="scrolly"  data-page="#tm-section-3">
+									<span>Artificial Intelligence</span>
+								</a>
+							</li>
+							<li>
+								<a href="#Careers" class="scrolly"  data-page="#tm-section-4">
+									<span>Careers</span>
+								</a>
+							</li>
+							<li>
+								<a href="#contact" class="scrolly"  data-page="#tm-section-5">
+									<span>Contact Us</span>
+								</a>
+							</li>
+						</ul>
+					</nav>
+				</div>
+			</div>
+
+			<div class="col-xl-9 col-lg-8 col-md-12 col-sm-12 tm-content">
+
+					<!-- section 1 -->
+					<section id="tm-section-1" class="tm-section">
+						<div class="ml-auto">
+							<header class="mb-4"><h1 class="tm-text-shadow">Free Stock Analysis</h1></header>
+							<p class="mb-5 tm-font-big">We provide free tools to analyze stocks. Our services are completly free and without any registration.</p>
+							<a href="#" class="btn tm-btn tm-font-big" data-nav-link="#tmNavLink2">Continue...</a>
+							<!-- data-nav-link holds the ID of nav item, which means this link should behave the same as that nav item  -->
+						</div>
+					</section>
+					
+					<!-- section 2 -->						
+						<section id="tm-section-2" class="tm-section">
+							
+							<form class="example ui-widget" action="javascript:void(0);" >
+								<input type="text" onkeypress="eventFunction(event)" onfocus="this.value=''" placeholder="Please enter the symbol of your stock." name="search" id="searchInput" >
+								<button type="button" onclick="searchFunction()"><i class="fa fa-search"></i></button>
+							</form>
+							<div class="ml-auto">								  
+								<div class="dropdown" onmouseover="hoveringMenu()" onmouseout="hoveringMenuClosed()">
+								  <button class="dropbtn blob" id = "chartMenu">BC</button>
+								  <div class="dropdown-content multi-cols">
+									<a href="#/tools/bc" onmouseover="changingExplanation('BC')" onclick="changeGraph('BC')">BC</a>
+									<a href="#/tools/cc" onmouseover="changingExplanation('CC')" onclick="changeGraph('CC')" >CC</a>
+									<a href="#/tools/bb" onmouseover="changingExplanation('BB')" onclick="changeGraph('BB')" >BB</a>
+									<a href="#/tools/mc" onmouseover="changingExplanation('MC')" onclick="changeGraph('MC')">MC</a>
+									<a href="#/tools/lr" onmouseover="changingExplanation('LR')" onclick="changeGraph('LR')">LR</a>
+									<a href="#/tools/rsi" onmouseover="changingExplanation('RSI')" onclick="changeGraph('RSI')">RSI</a>
+									<a href="#/tools/adi" onmouseover="changingExplanation('ADI')" onclick="changeGraph('ADI')">ADI</a>
+									<a href="#/tools/vwap" onmouseover="changingExplanation('VWAP')" onclick="changeGraph('VWAP')">VWAP</a>
+									<a href="#/tools/cmf" onmouseover="changingExplanation('CMF')" onclick="changeGraph('CMF')">CMF</a>
+									<a href="#/tools/emv" onmouseover="changingExplanation('EMV')" onclick="changeGraph('EMV')">EMV</a>
+									<a href="#/tools/fi" onmouseover="changingExplanation('FI')" onclick="changeGraph('FI')">FI</a>
+									<a href="#/tools/mfi" onmouseover="changingExplanation('MFI')" onclick="changeGraph('MFI')">MFI</a>
+									<a href="#/tools/nvi" onmouseover="changingExplanation('NVI')" onclick="changeGraph('NVI')">NVI</a>
+									<a href="#/tools/obv" onmouseover="changingExplanation('OBV')" onclick="changeGraph('OBV')">OBV</a>
+									<a href="#/tools/vpt" onmouseover="changingExplanation('VPT')" onclick="changeGraph('VPT')">VPT</a>
+									<a href="#/tools/ao" onmouseover="changingExplanation('AO')" onclick="changeGraph('AO')">AO</a>
+									<a href="#/tools/so" onmouseover="changingExplanation('SO')" onclick="changeGraph('SO')">SO</a>
+									<a href="#/tools/kama" onmouseover="changingExplanation('KAMA')" onclick="changeGraph('KAMA')">KAMA</a>
+									<a href="#/tools/ppo" onmouseover="changingExplanation('PPO')" onclick="changeGraph('PPO')">PPO</a>
+									<a href="#/tools/pvo" onmouseover="changingExplanation('PVO')" onclick="changeGraph('PVO')">PVO</a>
+									<a href="#/tools/roc" onmouseover="changingExplanation('ROC')" onclick="changeGraph('ROC')">ROC</a>
+									<a href="#/tools/srsi" onmouseover="changingExplanation('SRSI')" onclick="changeGraph('SRSI')">SRSI</a>
+									<a href="#/tools/uo" onmouseover="changingExplanation('UO')" onclick="changeGraph('UO')">UO</a>
+									<a href="#/tools/wri" onmouseover="changingExplanation('WRI')" onclick="changeGraph('WRI')">WRI</a>
+									<a href="#/tools/art" onmouseover="changingExplanation('ART')" onclick="changeGraph('ART')">ART</a>
+									<a href="#/tools/dc" onmouseover="changingExplanation('DC')" onclick="changeGraph('DC')">DC</a>
+									<a href="#/tools/kc" onmouseover="changingExplanation('KC')" onclick="changeGraph('KC')">KC</a>
+									<a href="#/tools/ui" onmouseover="changingExplanation('UI')" onclick="changeGraph('UI')">UI</a>
+									<a href="#/tools/ai" onmouseover="changingExplanation('AI')" onclick="changeGraph('AI')">AI</a>
+									<a href="#/tools/cci" onmouseover="changingExplanation('CCI')" onclick="changeGraph('CCI')">CCI</a>
+									<a href="#/tools/dpo" onmouseover="changingExplanation('DPO')" onclick="changeGraph('DPO')">DPO</a>
+									<a href="#/tools/ii" onmouseover="changingExplanation('II')" onclick="changeGraph('II')">II</a>
+									<a href="#/tools/kst" onmouseover="changingExplanation('KST')" onclick="changeGraph('KST')">KST</a>
+									<a href="#/tools/macd" onmouseover="changingExplanation('MACD')" onclick="changeGraph('MACD')">MACD</a>
+									<a href="#/tools/mi" onmouseover="changingExplanation('MI')" onclick="changeGraph('MI')">MI</a>
+									<a href="#/tools/psar" onmouseover="changingExplanation('PSAR')" onclick="changeGraph('PSAR')">PSAR</a>
+									<a href="#/tools/stc" onmouseover="changingExplanation('STC')" onclick="changeGraph('STC')">STC</a>
+									<a href="#/tools/trix" onmouseover="changingExplanation('TRIX')" onclick="changeGraph('TRIX')">TRIX</a>
+									<a href="#/tools/vi" onmouseover="changingExplanation('VI')" onclick="changeGraph('VI')">VI</a>
+									<a href="#/tools/wma" onmouseover="changingExplanation('WMA')" onclick="changeGraph('WMA')">WMA</a>
+								  </div>
+								</div>
+								<div class="dropdown">
+									<button class="dropbtn" id = "timespanMenu">3 year</button>
+									<div class="dropdown-content" id ="dropdownMenu" onclick="dropdownMenuDeactivate()">
+										<a href="#/tools/1week" onclick="changeTimespan('1week')">1 week</a>
+										<a href="#/tools/1month" onclick="changeTimespan('1month')">1 month</a>
+										<a href="#/tools/3month" onclick="changeTimespan('3month')">3 month</a>
+										<a href="#/tools/6month" onclick="changeTimespan('6month')">6 month</a>
+										<a href="#/tools/1year" onclick="changeTimespan('1year')">1 year</a>
+										<a href="#/tools/3year" onclick="changeTimespan('3year')">3 year</a>
+										<a href="#/tools/5year" onclick="changeTimespan('5year')">5 year</a>
+										<a href="#/tools/10year" onclick="changeTimespan('10year')">10 year</a>
+									</div>
+								</div>
+								<button class="dropbtn" style="color: gold;" id="playButton">Artificial Intelligence</button>
+								<div id="graphId" style="display:block;"> {{ currentGraph|safe }} </div>
+
+								<div id="mainContainer" style="display:none;">
+									<div id="content">
+									  <video id="contentElement">
+										<source src="https://storage.googleapis.com/interactive-media-ads/media/android.mp4">
+										<source src="https://storage.googleapis.com/interactive-media-ads/media/android.webm">							  
+									  </video>
+									</div>
+									<div id="adContainer"></div>
+								  </div>
+								  
+								  <script type="text/javascript" src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+								  <script src="{% static 'chartanalysis/js/ads.js' %}"></script>
+								<p>
+								  <a href="#" class="btn tm-btn_2" id = "addResistanceBtn" onclick="addResistanceButton()" >Add Fibonacci Lines (Resistance)</a>
+								  <a href="#" class="btn tm-btn_2" id = "addSupportBtn" onclick="addSupportButton()">Add Fibonacci Lines (Support)</a>
+								  <a href="#" class="btn tm-btn_2" id = "deleteLinesBtn" onclick="deleteLinesButton()">  Delete Fibonacci Lines   </a>
+								</p>		
+								<p>
+									<a href="#" class="btn tm-btn_2" id = "fullScreen" onclick="openFullscreen()">  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Start Fullscreen Mode &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  </a>
+									<input type="textExplain" id="explainBox" name="explainBox" style="visibility:visible;" readonly>
+								</p>						
+							</div>
+					</section>
+
+					<!-- section 3 -->
+					<section id="tm-section-3" class="tm-section">
+						<header class="mb-4"><h1 class="tm-text-shadow">Artificial Intelligence</h1></header>
+						<p class="mb-5 tm-font-big">We provide automated technical analysis for stocks based on Artificial Intelligence. If you want such an analysis, type your Ticket Symbol into the form and contiunue the payment.</p>
+						<p>
+							<div class="contact_message">
+								<form action="#contact" method="post" class="contact-form" name="orderForm" id="paypal_form">
+									<div class="form-group">
+										<input type="text" id="ticket_symbol" name="ticket_symbol" onfocus="this.value=''" class="form-control" placeholder="Ticket Symbol" required>
+									</div>
+									<div class="form-group">
+										<input type="email" id="contact_email" name="contact_email" class="form-control" placeholder="E-Mail" required>
+									</div>
+									<div type="submit" class="paypalButton" id="paypal-button-container"></div>
+								</form>
+							</div>
+							
+						</p>
+					</section>
+
+					<section id="tm-section-4" class="tm-section">
+						<header class="mb-4"><h1 class="tm-text-shadow">Careers</h1></header>
+						<p class="mb-5 tm-font-big"> You are interested in a Career as FinTech Engineer? We are looking for Full Stack Developer, Analysts and AI Engineers.</p>
+					</section>
+
+					<!-- section 4 -->
+					<section id="tm-section-5" class="tm-section">
+						<div class="tm-bg-transparent-black tm-contact-box-pad">
+							<div class="row mb-4">
+								<div class="col-sm-12">
+									<header class="mb-4"><h1 class="tm-text-shadow">Contact us</h1></header>
+								</div>
+							</div>
+							<div class="row tm-page-4-content">
+								<div class="col-md-6 col-sm-12 tm-contact-col">
+									<div class="contact_message">
+										<form action="https://formspree.io/f/meqvrdgy" method="post" id="my-form" class="contact-form">
+											{% csrf_token %}
+											<div class="form-group">
+												<input type="text" id="contact_name" name="contact_name" placeholder="Name" required>
+											</div>
+											<div class="form-group">
+												<input type="email" id="contact_email" name="contact_email" placeholder="Email" required>
+											</div>
+											<div class="form-group">
+												<textarea id="contact_message" name="contact_message" class="form-control" rows="9" placeholder="Message" required></textarea>
+											</div>
+											<button type="submit" class="btn tm-btn-submit tm-btn ml-auto">Submit</button>
+											
+										</form>
+										<div id="status"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</section>
+				</div>	<!-- .tm-content -->
+			</div>	<!-- row -->
+			<p style="text-align:center;">&copy; 2020 FreeStockAnalysis.com</p>
+		</div>
+
+		<div id="preload-01"></div>
+		<div id="preload-02"></div>
+		<div id="preload-03"></div>
+		<div id="preload-04"></div>
+
+
+		<script type="text/javascript" src="{% static 'chartanalysis/slick/slick.min.js' %}"></script> <!-- Slick Carousel -->
+		<script src="{% static 'chartanalysis/js/functions.js' %}"></script>
+
+		
+		
+	</body>
+</html>
+
+
+{% endblock content %}

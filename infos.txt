@@ -1,0 +1,5 @@
+https://technical-analysis-library-in-python.readthedocs.io/en/latest/ta.html#momentum-indicators
+
+
+
+https://towardsdatascience.com/using-deep-learning-ai-to-predict-the-stock-market-9399cf15a312

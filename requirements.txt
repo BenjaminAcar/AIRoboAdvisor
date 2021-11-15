@@ -1,0 +1,16 @@
+json
+flask
+django
+plotly
+numpy
+pandas
+datetime
+pylab
+sys
+time
+easygui
+os
+sklearn
+chart_studio
+scipy
+

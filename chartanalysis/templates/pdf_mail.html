@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+{% block content %}
+<html>
+<head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <style type="text/css">
+        p {
+            text-align:center; 
+            color:white;
+            font-size: large;
+        }
+        .center {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 50%;
+        }
+        img {max-width:100%; height:auto}
+    </style>
+</head>
+<body style="background-color:black;">
+    <h1 style="text-align:center; color:white;">Thank you for your purchase!</h1>
+    <p">
+        You successfully bought a Free-Stock-Analysis.com analysis.
+    </p>
+    <p>
+        The analysis is split into 2 sections. Every section is cleary explained.
+    </p>
+    <p>
+        Imagine being able to know when a stock is heading up or going down in the next week and then with the remaining cash you have, you would put all of your money to invest or short that stock. After playing the stock market with the knowledge of whether or not the stock will increase or decrease in value, you might end up a millionaire!
+        Unfortunately, this is impossible because no one can know the future. However, we can make estimated guesses and informed forecasts based on the information we have in the present and the past regarding any stock. An estimated guess from past movements and patterns in stock price is called Technical Analysis. 
+    </p>
+    <p>
+        Here we plot the predicted values with the actual values to see how well the compare. If the plot of the predicted values are extremely off and nowhere near the actual values, then we know that our model is deficient. However, if the values appear visually close and the RMSE is very low, then we can conclude that our model is acceptable.
+    </p>
+    <img  width="924" height="484" class="center" src="../../static/chartanalysis/img/Figure_1.png" />    
+    <p>
+        Once we are satisfied with how well our model performs, then we can use it to predict future values
+    </p>
+    <img  width="924" height="484" class="center" src="../../static/chartanalysis/img/Figure_2.png" />
+    <p>
+        And there we have it! — The forecasted prices for your stock. Do what you wish with this knowledge but remember one thing: the stock market is unpredictable. The values predicted here are not certain. They may be better than just randomly guessing since the values are educated guesses based on the Technical Indicators and price patterns from the past.
+    </p>
+    <p>
+        Alert: Our analysis is only an IT product. We are no Financial Advisor, only Engineers. This analysis doesn't replace professional advise. We are not responsible for potential losses.
+    </p>
+    <p>
+        This is a Free-Stock-Analysis.com product. Sharing our reselling is not allowed! 
+    </p>
+</body>
+</html>
+{% endblock content %}
